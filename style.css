@@ -70,10 +70,11 @@ html, body{
 
 /* ✅ This creates your 6×6 grid */
 .grid{
-  padding: var(--pad);
+  padding: 30px 60px;
   display:grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 18px;
+  gap: 26px;
+  justify-items: center;
 }
 
 .gridbtn{
