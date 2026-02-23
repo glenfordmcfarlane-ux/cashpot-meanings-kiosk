@@ -13,6 +13,7 @@ html, body{
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  overflow: hidden;   /* prevents scrolling on kiosk */
 }
 
 .app{
@@ -78,7 +79,8 @@ html, body{
 }
 
 .gridbtn{
-  height: 150px;
+  height: 175px;
+  width: 175px;
   border-radius: 18px;
   border: 2px solid rgba(255,255,255,.25);
   background: rgba(255,255,255,.08);
