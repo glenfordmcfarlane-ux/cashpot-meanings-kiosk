@@ -2,18 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cash Pot Meanings</title>
+
+  <!-- Kiosk-friendly viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+  <title>CASH POT MEANINGS</title>
+
+  <!-- Bump this number any time you change style.css to force refresh -->
   <link rel="stylesheet" href="style.css?v=10" />
 </head>
-<body>
 
-  <main id="app" class="app">
+<body>
+  <!-- Force TREBUCHET + ALL CAPS for UI text (without touching style.css) -->
+  <main
+    id="app"
+    class="app"
+    style="font-family:'Trebuchet MS', Trebuchet, Verdana, sans-serif; text-transform:uppercase;"
+  >
 
     <!-- GRID VIEW -->
     <section id="gridView" class="view view--active">
       <header class="topbar">
-        <h1 class="title">Select a Meaning</h1>
+        <h1 class="title">SELECT A MEANING</h1>
       </header>
 
       <div id="grid" class="grid"></div>
@@ -23,23 +33,26 @@
     <section id="cardView" class="view">
       <header class="topbar topbar--nav">
 
-        <button id="btnBack" class="navbtn">
-          Back
+        <!-- Keep existing IDs (app.js uses these) -->
+        <button id="btnBack" class="navbtn" type="button" aria-label="BACK TO GRID">
+          BACK
         </button>
 
-        <div class="counter">
+        <div class="counter" aria-label="CARD COUNT">
           <span id="counterNum">01</span> / 36
         </div>
 
-        <div class="navbtn-group">
-          <button id="btnPrev" class="navbtn">Prev</button>
-          <button id="btnNext" class="navbtn">Next</button>
+        <div class="navbtn-group" aria-label="CARD NAVIGATION">
+          <button id="btnPrev" class="navbtn" type="button" aria-label="PREVIOUS CARD">PREV</button>
+          <button id="btnNext" class="navbtn" type="button" aria-label="NEXT CARD">NEXT</button>
         </div>
 
       </header>
 
       <div class="cardStage">
-        <img id="cardImage" class="cardImage" alt="Meaning card" />
+        <!-- NOTE: Card sizing (to fill more screen without distortion) is controlled in style.css
+             using max-height/width + object-fit:contain. Keep native aspect ratio (1080x1520). -->
+        <img id="cardImage" class="cardImage" alt="MEANING CARD" />
       </div>
 
     </section>
