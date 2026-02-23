@@ -49,8 +49,11 @@ html, body{
   gap: 12px;
   position: sticky;
   top: 0;
-  z-index: 50;
-  background: var(--bg);
+  z-index: 100;
+  background: rgba(17,17,17,.95);
+  backdrop-filter: blur(4px);
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.15);
 }
 
 .title{
@@ -84,13 +87,13 @@ html, body{
 /* ✅ Grid: 4 columns, scroll inside only */
 .grid{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
-  padding: 18px 36px 26px;
+  padding: 12px 28px 18px;
   display:grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+  gap: 14px;
   justify-items: center;
-
   overflow-y: auto;
+
   -webkit-overflow-scrolling: touch;
 }
 
@@ -98,10 +101,10 @@ html, body{
 .gridbtn{
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 18px;
-  border: 2px solid rgba(255,255,255,.25);
-  background: rgba(255,255,255,.08);
-  padding: 8px;
+  border-radius: 16px;
+  border: 2px solid rgba(255,255,255,.20);
+  background: rgba(255,255,255,.06);
+  padding: 6px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -122,17 +125,17 @@ html, body{
 
 /* Card view */
 .cardStage{
-  height: calc(100vh - var(--safe-top) - var(--topbar-h));
+  height: calc(100vh - var(--safe-top) - var(--topbar-h) - 10px);
   display:flex;
   align-items:center;
   justify-content:center;
-  padding: 12px;
+  padding: 6px;
 }
 
 .cardImage{
   width: 100%;
   max-width: 1080px;
-  max-height: calc(100vh - var(--safe-top) - var(--topbar-h) - 24px);
+  max-height: calc(100vh - var(--safe-top) - var(--topbar-h) - 12px);
   height: auto;
   object-fit: contain;
   border-radius: 18px;
