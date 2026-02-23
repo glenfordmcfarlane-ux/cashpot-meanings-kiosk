@@ -19,9 +19,11 @@ let current = 1;
 
 // -------------------------------
 // Inject minimal CSS for animations + edge glow feedback
-// (Keeps changes inside app.js as requested)
 // -------------------------------
 (function injectKioskFxCSS() {
+  // ✅ prevent duplicate injection if script is reloaded
+  if (document.getElementById("kfx-style")) return;
+
   const css = `
   /* ---- Card transition animations ---- */
   .cardStage{ position: relative; } /* ensure overlays anchor safely */
@@ -69,7 +71,9 @@ let current = 1;
     pointer-events: none;
   }
   `;
+
   const style = document.createElement("style");
+  style.id = "kfx-style";
   style.textContent = css;
   document.head.appendChild(style);
 })();
@@ -174,6 +178,15 @@ function preload(url) {
   preloadCache.set(url, img);
 }
 
+// ✅ keep cache from growing forever (kiosk stability)
+function trimPreloadCache(maxKeep = 10) {
+  if (preloadCache.size <= maxKeep) return;
+  const keys = Array.from(preloadCache.keys());
+  // remove oldest
+  const removeCount = preloadCache.size - maxKeep;
+  for (let i = 0; i < removeCount; i++) preloadCache.delete(keys[i]);
+}
+
 function preloadNeighbors() {
   if (!config) return;
   const next = current < config.total ? current + 1 : null;
@@ -181,6 +194,9 @@ function preloadNeighbors() {
 
   if (prev) preload(cardUrl(prev));
   if (next) preload(cardUrl(next));
+
+  // keep only a small cache
+  trimPreloadCache(10);
 }
 
 // -------------------------------
@@ -193,7 +209,7 @@ function openCard(n, direction = null) {
 
   const url = cardUrl(current);
   cardImage.src = url;
-  cardImage.alt = `MEANING CARD ${pad2(current)}`; // uppercase-friendly
+  cardImage.alt = `MEANING CARD ${pad2(current)}`;
 
   showView(cardView);
   updateNavDisabled();
@@ -211,6 +227,11 @@ function openCard(n, direction = null) {
 
 function openGrid() {
   showView(gridView);
+
+  // ✅ clean up visual state when leaving card view
+  showEdge("left", false);
+  showEdge("right", false);
+  cardImage.classList.remove("kfx-tap", "kfx-slide-in-left", "kfx-slide-in-right");
 
   const loc = new URL(window.location.href);
   loc.searchParams.delete("card");
@@ -241,14 +262,9 @@ function prevCard(source = "button") {
 
 // ===============================
 // SWIPE SUPPORT (TOUCH SCREENS)
-// Improvements included:
-// 1) Slide animation
-// 2) Tap/drag visual feedback
-// 3) Edge glow (and optional vibrate)
-// 4) Disable swipe past first/last
-// 5) Throttled touchmove updates (kiosk performance)
+// - Prevents vertical scroll while swiping horizontally
+// - Throttled touchmove updates (kiosk performance)
 // ===============================
-
 (function enableCardSwipe() {
   const SWIPE_MIN_X = 70; // min horizontal travel to count as swipe
   const SWIPE_MAX_Y = 90; // ignore if too vertical
@@ -266,7 +282,6 @@ function prevCard(source = "button") {
   }
 
   function applyEdgeFromDx(dx) {
-    // show faint edge hint while dragging
     if (dx < -30) {
       showEdge("right", true);
       showEdge("left", false);
@@ -307,7 +322,16 @@ function prevCard(source = "button") {
         const t = e.touches && e.touches[0];
         if (!t) return;
 
-        lastDx = t.clientX - sx;
+        const dx = t.clientX - sx;
+        const dy = t.clientY - sy;
+
+        // ✅ if mostly horizontal movement, block browser scrolling
+        if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
+          // needs passive:false to work; keep this one non-passive
+          e.preventDefault();
+        }
+
+        lastDx = dx;
 
         if (!rafPending) {
           rafPending = true;
@@ -317,7 +341,7 @@ function prevCard(source = "button") {
           });
         }
       },
-      { passive: true }
+      { passive: false } // ✅ allows preventDefault above
     );
 
     stage.addEventListener(
@@ -336,7 +360,6 @@ function prevCard(source = "button") {
         const dx = t.clientX - sx;
         const dy = t.clientY - sy;
 
-        // ignore mostly vertical gestures
         if (Math.abs(dy) > SWIPE_MAX_Y) return;
 
         if (dx <= -SWIPE_MIN_X) {
@@ -395,21 +418,22 @@ async function init() {
     const res = await fetch("data/meanings.json", { cache: "no-store" });
     config = await res.json();
   } catch (err) {
-    console.error("Failed to load meanings.json", err);
+    console.error("FAILED TO LOAD MEANINGS.JSON", err);
     return;
   }
 
   // Basic safety checks
   if (!config || !config.total || !config.cardsPath) {
-    console.error("meanings.json missing required fields:", config);
+    console.error("MEANINGS.JSON MISSING REQUIRED FIELDS:", config);
     return;
   }
 
   // Card image load fallback (avoid blank state)
   cardImage.addEventListener("error", () => {
-    console.error("Card image failed to load:", cardImage.src);
-    // small visual feedback if desired
-    try { if (navigator.vibrate) navigator.vibrate(20); } catch (_) {}
+    console.error("CARD IMAGE FAILED TO LOAD:", cardImage.src);
+    try {
+      if (navigator.vibrate) navigator.vibrate(20);
+    } catch (_) {}
   });
 
   // Build Grid Buttons (1–total)
@@ -417,11 +441,11 @@ async function init() {
     const button = document.createElement("button");
     button.className = "gridbtn";
     button.type = "button";
-    button.addEventListener("click", () => openCard(i)); // no direction on direct open
+    button.addEventListener("click", () => openCard(i));
 
     const img = document.createElement("img");
     img.className = "gridbtn__img";
-    img.alt = `OPEN MEANING ${i}`; // uppercase-friendly
+    img.alt = `OPEN MEANING ${i}`;
     img.decoding = "async";
     img.loading = "eager";
     img.src = `${config.buttonsPath}/${config.buttonPrefix}${i}.${config.buttonExtension}`;
@@ -429,6 +453,11 @@ async function init() {
     button.appendChild(img);
     grid.appendChild(button);
   }
+
+  // ✅ initial preload helps first swipe/next
+  preload(cardUrl(1));
+  preload(cardUrl(2));
+  trimPreloadCache(10);
 
   // If URL contains ?card=#
   const loc = new URL(window.location.href);
