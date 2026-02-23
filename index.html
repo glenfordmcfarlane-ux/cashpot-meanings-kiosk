@@ -1,1 +1,51 @@
-<div id="grid" class="grid"></div>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cash Pot Meanings</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <main id="app" class="app">
+
+    <!-- GRID VIEW -->
+    <section id="gridView" class="view view--active">
+      <header class="topbar">
+        <h1 class="title">Select a Meaning</h1>
+      </header>
+
+      <div id="grid" class="grid"></div>
+    </section>
+
+    <!-- CARD VIEW -->
+    <section id="cardView" class="view">
+      <header class="topbar topbar--nav">
+
+        <button id="btnBack" class="navbtn">
+          Back
+        </button>
+
+        <div class="counter">
+          <span id="counterNum">01</span> / 36
+        </div>
+
+        <div class="navbtn-group">
+          <button id="btnPrev" class="navbtn">Prev</button>
+          <button id="btnNext" class="navbtn">Next</button>
+        </div>
+
+      </header>
+
+      <div class="cardStage">
+        <img id="cardImage" class="cardImage" alt="Meaning card" />
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
