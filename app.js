@@ -1,5 +1,6 @@
 // ===============================
 // CASH POT MEANINGS – KIOSK APP
+// (Enhanced: swipe + animations + edge glow + bounds lock)
 // ===============================
 
 const gridView = document.getElementById("gridView");
@@ -16,6 +17,103 @@ const btnNext = document.getElementById("btnNext");
 let config = null;
 let current = 1;
 
+// -------------------------------
+// Inject minimal CSS for animations + edge glow feedback
+// (Keeps changes inside app.js as requested)
+// -------------------------------
+(function injectKioskFxCSS() {
+  const css = `
+  /* ---- Card transition animations ---- */
+  .cardImage{
+    will-change: transform, opacity;
+    transform: translateZ(0);
+  }
+  .kfx-slide-in-left  { animation: kfxSlideInLeft  220ms ease-out both; }
+  .kfx-slide-in-right { animation: kfxSlideInRight 220ms ease-out both; }
+  .kfx-tap            { transform: scale(0.99); opacity: .98; }
+
+  @keyframes kfxSlideInLeft {
+    from { transform: translateX(22px); opacity: .55; }
+    to   { transform: translateX(0);    opacity: 1;   }
+  }
+  @keyframes kfxSlideInRight {
+    from { transform: translateX(-22px); opacity: .55; }
+    to   { transform: translateX(0);     opacity: 1;   }
+  }
+
+  /* ---- Edge glow overlays (swipe hints / bounds feedback) ---- */
+  .kfx-edge{
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 18%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+    z-index: 5;
+  }
+  .kfx-edge--left{
+    left: 0;
+    background: radial-gradient(closest-side at 0% 50%, rgba(242,195,0,.55), rgba(242,195,0,0));
+  }
+  .kfx-edge--right{
+    right: 0;
+    background: radial-gradient(closest-side at 100% 50%, rgba(242,195,0,.55), rgba(242,195,0,0));
+  }
+  .kfx-edge--show{ opacity: 1; }
+
+  /* ---- Disabled nav buttons look ---- */
+  .navbtn[disabled]{
+    opacity: .35;
+    transform: none !important;
+    pointer-events: none;
+  }
+  `;
+  const style = document.createElement("style");
+  style.textContent = css;
+  document.head.appendChild(style);
+})();
+
+// Create edge glow elements once
+let edgeLeft = null;
+let edgeRight = null;
+function ensureEdgeGlows() {
+  const stage = document.querySelector(".cardStage");
+  if (!stage) return;
+
+  // Make stage positionable for overlays
+  const cs = window.getComputedStyle(stage);
+  if (cs.position === "static") stage.style.position = "relative";
+
+  if (!edgeLeft) {
+    edgeLeft = document.createElement("div");
+    edgeLeft.className = "kfx-edge kfx-edge--left";
+    stage.appendChild(edgeLeft);
+  }
+  if (!edgeRight) {
+    edgeRight = document.createElement("div");
+    edgeRight.className = "kfx-edge kfx-edge--right";
+    stage.appendChild(edgeRight);
+  }
+}
+
+function showEdge(which, on) {
+  ensureEdgeGlows();
+  if (!edgeLeft || !edgeRight) return;
+  const el = which === "left" ? edgeLeft : edgeRight;
+  el.classList.toggle("kfx-edge--show", !!on);
+}
+
+function pulseEdge(which) {
+  showEdge(which, true);
+  // optional small vibration if supported
+  try { if (navigator.vibrate) navigator.vibrate(15); } catch (_) {}
+  setTimeout(() => showEdge(which, false), 160);
+}
+
+// -------------------------------
+// Helpers
+// -------------------------------
+
 // Pad number to 2 digits (01, 02, etc.)
 function pad2(n) {
   return String(n).padStart(2, "0");
@@ -26,6 +124,9 @@ function showView(view) {
   gridView.classList.remove("view--active");
   cardView.classList.remove("view--active");
   view.classList.add("view--active");
+
+  // Ensure edge overlays exist when card view is active
+  if (view === cardView) ensureEdgeGlows();
 }
 
 // Build card image path
@@ -34,8 +135,33 @@ function cardUrl(n) {
   return `${config.cardsPath}/${num}.${config.cardExtension}`;
 }
 
+// Enable/disable prev/next (prevents swipe + button nav past bounds)
+function updateNavDisabled() {
+  if (!config) return;
+
+  const atFirst = current <= 1;
+  const atLast = current >= config.total;
+
+  btnPrev.disabled = atFirst;
+  btnNext.disabled = atLast;
+
+  btnPrev.setAttribute("aria-disabled", atFirst ? "true" : "false");
+  btnNext.setAttribute("aria-disabled", atLast ? "true" : "false");
+}
+
+// Apply a slide-in animation depending on direction
+function animateCard(direction) {
+  cardImage.classList.remove("kfx-slide-in-left", "kfx-slide-in-right");
+  // Force reflow so animation always restarts
+  // eslint-disable-next-line no-unused-expressions
+  cardImage.offsetHeight;
+
+  if (direction === "next") cardImage.classList.add("kfx-slide-in-left");
+  if (direction === "prev") cardImage.classList.add("kfx-slide-in-right");
+}
+
 // Open a card
-function openCard(n) {
+function openCard(n, direction = null) {
   current = n;
 
   counterNum.textContent = pad2(current);
@@ -43,6 +169,11 @@ function openCard(n) {
   cardImage.alt = `Meaning card ${pad2(current)}`;
 
   showView(cardView);
+
+  updateNavDisabled();
+
+  // Animate only when direction is provided (Prev/Next or swipe)
+  if (direction) animateCard(direction);
 
   // Update URL (so reload keeps same card)
   const url = new URL(window.location.href);
@@ -59,48 +190,164 @@ function openGrid() {
   history.replaceState({}, "", url);
 }
 
-// Next card
-function nextCard() {
-  const n = current >= config.total ? 1 : current + 1;
-  openCard(n);
+// Next card (NO wrap: stops at last)
+function nextCard(source = "button") {
+  if (current >= config.total) {
+    // Edge feedback on blocked next (mainly for swipe)
+    if (source === "swipe") pulseEdge("right");
+    updateNavDisabled();
+    return;
+  }
+  openCard(current + 1, "next");
 }
 
-// Previous card
-function prevCard() {
-  const n = current <= 1 ? config.total : current - 1;
-  openCard(n);
+// Previous card (NO wrap: stops at first)
+function prevCard(source = "button") {
+  if (current <= 1) {
+    if (source === "swipe") pulseEdge("left");
+    updateNavDisabled();
+    return;
+  }
+  openCard(current - 1, "prev");
 }
 
 // ===============================
 // SWIPE SUPPORT (TOUCH SCREENS)
+// Improvements included:
+// 1) Slide animation
+// 2) Tap/drag visual feedback
+// 3) Edge glow (and optional vibrate)
+// 4) Disable swipe past first/last
 // ===============================
 
-let touchStartX = null;
+(function enableCardSwipe() {
+  const SWIPE_MIN_X = 70;  // min horizontal travel to count as swipe
+  const SWIPE_MAX_Y = 90;  // ignore if too vertical
 
-cardView.addEventListener("touchstart", (e) => {
-  touchStartX = e.changedTouches[0].screenX;
-}, { passive: true });
+  let sx = 0;
+  let sy = 0;
+  let tracking = false;
 
-cardView.addEventListener("touchend", (e) => {
-  if (touchStartX == null) return;
+  function isCardActive() {
+    return cardView.classList.contains("view--active");
+  }
 
-  const endX = e.changedTouches[0].screenX;
-  const dx = endX - touchStartX;
-  touchStartX = null;
+  const stageBind = () => {
+    const stage = document.querySelector(".cardStage");
+    if (!stage) return;
 
-  if (Math.abs(dx) < 60) return; // ignore small swipes
+    ensureEdgeGlows();
 
-  if (dx < 0) nextCard();
-  else prevCard();
-}, { passive: true });
+    stage.addEventListener(
+      "touchstart",
+      (e) => {
+        if (!isCardActive()) return;
+        if (!e.touches || e.touches.length !== 1) return;
+
+        tracking = true;
+        sx = e.touches[0].clientX;
+        sy = e.touches[0].clientY;
+
+        // subtle press feedback
+        cardImage.classList.add("kfx-tap");
+      },
+      { passive: true }
+    );
+
+    stage.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!tracking || !isCardActive()) return;
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+
+        const dx = t.clientX - sx;
+
+        // show faint edge hint while dragging
+        if (dx < -30) {
+          showEdge("right", true);
+          showEdge("left", false);
+        } else if (dx > 30) {
+          showEdge("left", true);
+          showEdge("right", false);
+        } else {
+          showEdge("left", false);
+          showEdge("right", false);
+        }
+      },
+      { passive: true }
+    );
+
+    stage.addEventListener(
+      "touchend",
+      (e) => {
+        if (!tracking || !isCardActive()) return;
+        tracking = false;
+
+        cardImage.classList.remove("kfx-tap");
+        showEdge("left", false);
+        showEdge("right", false);
+
+        const t = e.changedTouches && e.changedTouches[0];
+        if (!t) return;
+
+        const dx = t.clientX - sx;
+        const dy = t.clientY - sy;
+
+        // ignore mostly vertical gestures
+        if (Math.abs(dy) > SWIPE_MAX_Y) return;
+
+        // swipe left => NEXT
+        if (dx <= -SWIPE_MIN_X) {
+          nextCard("swipe");
+          return;
+        }
+
+        // swipe right => PREV
+        if (dx >= SWIPE_MIN_X) {
+          prevCard("swipe");
+          return;
+        }
+      },
+      { passive: true }
+    );
+
+    stage.addEventListener(
+      "touchcancel",
+      () => {
+        tracking = false;
+        cardImage.classList.remove("kfx-tap");
+        showEdge("left", false);
+        showEdge("right", false);
+      },
+      { passive: true }
+    );
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", stageBind);
+  } else {
+    stageBind();
+  }
+})();
 
 // ===============================
 // BUTTON EVENTS
 // ===============================
 
 btnBack.addEventListener("click", openGrid);
-btnNext.addEventListener("click", nextCard);
-btnPrev.addEventListener("click", prevCard);
+btnNext.addEventListener("click", () => nextCard("button"));
+btnPrev.addEventListener("click", () => prevCard("button"));
+
+// Optional: keyboard support (useful for testing)
+window.addEventListener("keydown", (e) => {
+  if (!config) return;
+  if (!cardView.classList.contains("view--active")) return;
+
+  if (e.key === "ArrowRight") nextCard("key");
+  if (e.key === "ArrowLeft") prevCard("key");
+  if (e.key === "Escape") openGrid();
+});
 
 // ===============================
 // INITIALIZATION
