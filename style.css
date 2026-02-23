@@ -155,18 +155,19 @@ button, .navbtn, .title, .counter{
 
 /* Card view */
 .cardStage{
-  height: calc(100vh - var(--safe-top) - var(--topbar-h) - 10px);
+  height: calc(100vh - var(--safe-top) - var(--topbar-h));
   display:flex;
   align-items:center;
   justify-content:center;
-  padding: 6px;
+  padding: 0;           /* ✅ remove extra padding */
 }
 
+/* ✅ Scale by HEIGHT first (fills screen more), keep aspect ratio */
 .cardImage{
-  width: 100%;
-  max-width: 1080px;
-  max-height: calc(100vh - var(--safe-top) - var(--topbar-h) - 12px);
-  height: auto;
+  height: 100%;
+  width: auto;          /* ✅ preserve aspect ratio */
+  max-height: 100%;
+  max-width: 100%;
   object-fit: contain;
   border-radius: 18px;
 }
