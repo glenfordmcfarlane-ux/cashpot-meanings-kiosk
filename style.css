@@ -5,6 +5,7 @@
   --topbar-h: 120px; /* was 160px */
   --bg: #111;
   --text: #fff;
+  --safe-top: 140px;
 }
 
 *{ box-sizing: border-box; }
@@ -32,10 +33,10 @@ html, body{
 
 .topbar{
   height: var(--topbar-h);
+  padding: var(--safe-top) var(--pad) 0 var(--pad);
   display:flex;
   align-items:center;
   justify-content:center;
-  padding: 0 var(--pad);
 }
 
 .topbar--nav{
@@ -75,10 +76,10 @@ html, body{
 
 /* ✅ Grid fills remaining screen height + centers */
 .grid{
-  height: calc(100vh - var(--topbar-h));
+  height: calc(100vh - var(--topbar-h) - var(--safe-top));
   padding: 28px 48px;
   display:grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 22px;
   align-content: center;   /* centers grid vertically */
   justify-items: center;
@@ -108,7 +109,7 @@ html, body{
 
 /* ✅ Card view uses full remaining height, less padding */
 .cardStage{
-  height: calc(100vh - var(--topbar-h));
+  height: calc(100vh - var(--topbar-h) - var(--safe-top));
   display:flex;
   align-items:center;
   justify-content:center;
@@ -119,7 +120,7 @@ html, body{
 .cardImage{
   width: 100%;
   max-width: 1080px;
-  max-height: calc(100vh - var(--topbar-h) - 32px);
+  max-height: calc(100vh - var(--topbar-h) - var(--safe-top) - 32px);
   height: auto;
   object-fit: contain;
   border-radius: 18px;
