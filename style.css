@@ -9,6 +9,9 @@
   /* ✅ If kiosk-menu masks are disabled for meanings page,
      this should be small (just a safety buffer) */
   --safe-top: 20px;
+
+  /* ✅ Push Prev/Next left (clear of kiosk +/- controls) */
+  --nav-right-offset: 90px;
 }
 
 *{ box-sizing: border-box; }
@@ -61,22 +64,33 @@ html, body{
   margin:0;
 }
 
+/* ✅ Polished button styling */
 .navbtn{
-  height: 90px;
+  height: 80px;
   min-width: 140px;
-  border-radius: 18px;
-  border: 2px solid rgba(255,255,255,.25);
-  background: rgba(255,255,255,.08);
+  border-radius: 16px;
+  border: 2px solid rgba(255,255,255,.22);
+  background: rgba(255,255,255,.12);
   color: #fff;
-  font-size: 28px;
-  padding: 0 18px;
+  font-size: 26px;
+  font-weight: 600;
+  padding: 0 20px;
+  backdrop-filter: blur(6px);
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
 }
 
-.navbtn:active{ transform: scale(0.98); }
+.navbtn:active{
+  transform: scale(0.96);
+  background: rgba(255,255,255,.18);
+  border-color: rgba(255,255,255,.28);
+}
 
 .navbtn-group{
   display:flex;
   gap: 12px;
+
+  /* ✅ This is what moves Prev/Next left */
+  margin-right: var(--nav-right-offset);
 }
 
 .counter{
