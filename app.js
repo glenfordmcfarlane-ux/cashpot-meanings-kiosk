@@ -1,6 +1,6 @@
 // ===============================
 // CASH POT MEANINGS – KIOSK APP
-// (Enhanced: swipe + animations + edge glow + bounds lock)
+// (Enhanced: swipe + animations + edge glow + bounds lock + preloading + cleanup)
 // ===============================
 
 const gridView = document.getElementById("gridView");
@@ -24,6 +24,7 @@ let current = 1;
 (function injectKioskFxCSS() {
   const css = `
   /* ---- Card transition animations ---- */
+  .cardStage{ position: relative; } /* ensure overlays anchor safely */
   .cardImage{
     will-change: transform, opacity;
     transform: translateZ(0);
@@ -73,14 +74,17 @@ let current = 1;
   document.head.appendChild(style);
 })();
 
-// Create edge glow elements once
+// -------------------------------
+// Edge glow overlays
+// -------------------------------
 let edgeLeft = null;
 let edgeRight = null;
+
 function ensureEdgeGlows() {
   const stage = document.querySelector(".cardStage");
   if (!stage) return;
 
-  // Make stage positionable for overlays
+  // If CSS wasn't applied for any reason, enforce safe anchoring
   const cs = window.getComputedStyle(stage);
   if (cs.position === "static") stage.style.position = "relative";
 
@@ -105,31 +109,27 @@ function showEdge(which, on) {
 
 function pulseEdge(which) {
   showEdge(which, true);
-  // optional small vibration if supported
-  try { if (navigator.vibrate) navigator.vibrate(15); } catch (_) {}
+  try {
+    if (navigator.vibrate) navigator.vibrate(15);
+  } catch (_) {}
   setTimeout(() => showEdge(which, false), 160);
 }
 
 // -------------------------------
 // Helpers
 // -------------------------------
-
-// Pad number to 2 digits (01, 02, etc.)
 function pad2(n) {
   return String(n).padStart(2, "0");
 }
 
-// Show selected view
 function showView(view) {
   gridView.classList.remove("view--active");
   cardView.classList.remove("view--active");
   view.classList.add("view--active");
 
-  // Ensure edge overlays exist when card view is active
   if (view === cardView) ensureEdgeGlows();
 }
 
-// Build card image path
 function cardUrl(n) {
   const num = pad2(n);
   return `${config.cardsPath}/${num}.${config.cardExtension}`;
@@ -160,40 +160,67 @@ function animateCard(direction) {
   if (direction === "prev") cardImage.classList.add("kfx-slide-in-right");
 }
 
-// Open a card
+// -------------------------------
+// Preload helpers (makes Prev/Next feel instant on kiosk)
+// -------------------------------
+const preloadCache = new Map(); // url -> Image
+
+function preload(url) {
+  if (!url || preloadCache.has(url)) return;
+  const img = new Image();
+  img.decoding = "async";
+  img.loading = "eager";
+  img.src = url;
+  preloadCache.set(url, img);
+}
+
+function preloadNeighbors() {
+  if (!config) return;
+  const next = current < config.total ? current + 1 : null;
+  const prev = current > 1 ? current - 1 : null;
+
+  if (prev) preload(cardUrl(prev));
+  if (next) preload(cardUrl(next));
+}
+
+// -------------------------------
+// Card / Grid actions
+// -------------------------------
 function openCard(n, direction = null) {
   current = n;
 
   counterNum.textContent = pad2(current);
-  cardImage.src = cardUrl(current);
-  cardImage.alt = `Meaning card ${pad2(current)}`;
+
+  const url = cardUrl(current);
+  cardImage.src = url;
+  cardImage.alt = `MEANING CARD ${pad2(current)}`; // uppercase-friendly
 
   showView(cardView);
-
   updateNavDisabled();
 
-  // Animate only when direction is provided (Prev/Next or swipe)
   if (direction) animateCard(direction);
 
+  // Preload neighbors for snappy nav
+  preloadNeighbors();
+
   // Update URL (so reload keeps same card)
-  const url = new URL(window.location.href);
-  url.searchParams.set("card", String(current));
-  history.replaceState({}, "", url);
+  const loc = new URL(window.location.href);
+  loc.searchParams.set("card", String(current));
+  history.replaceState({}, "", loc);
 }
 
-// Return to grid
 function openGrid() {
   showView(gridView);
 
-  const url = new URL(window.location.href);
-  url.searchParams.delete("card");
-  history.replaceState({}, "", url);
+  const loc = new URL(window.location.href);
+  loc.searchParams.delete("card");
+  history.replaceState({}, "", loc);
 }
 
-// Next card (NO wrap: stops at last)
+// Next card (NO wrap)
 function nextCard(source = "button") {
+  if (!config) return;
   if (current >= config.total) {
-    // Edge feedback on blocked next (mainly for swipe)
     if (source === "swipe") pulseEdge("right");
     updateNavDisabled();
     return;
@@ -201,8 +228,9 @@ function nextCard(source = "button") {
   openCard(current + 1, "next");
 }
 
-// Previous card (NO wrap: stops at first)
+// Previous card (NO wrap)
 function prevCard(source = "button") {
+  if (!config) return;
   if (current <= 1) {
     if (source === "swipe") pulseEdge("left");
     updateNavDisabled();
@@ -218,18 +246,37 @@ function prevCard(source = "button") {
 // 2) Tap/drag visual feedback
 // 3) Edge glow (and optional vibrate)
 // 4) Disable swipe past first/last
+// 5) Throttled touchmove updates (kiosk performance)
 // ===============================
 
 (function enableCardSwipe() {
-  const SWIPE_MIN_X = 70;  // min horizontal travel to count as swipe
-  const SWIPE_MAX_Y = 90;  // ignore if too vertical
+  const SWIPE_MIN_X = 70; // min horizontal travel to count as swipe
+  const SWIPE_MAX_Y = 90; // ignore if too vertical
 
   let sx = 0;
   let sy = 0;
   let tracking = false;
 
+  // throttle edge glow on move
+  let rafPending = false;
+  let lastDx = 0;
+
   function isCardActive() {
     return cardView.classList.contains("view--active");
+  }
+
+  function applyEdgeFromDx(dx) {
+    // show faint edge hint while dragging
+    if (dx < -30) {
+      showEdge("right", true);
+      showEdge("left", false);
+    } else if (dx > 30) {
+      showEdge("left", true);
+      showEdge("right", false);
+    } else {
+      showEdge("left", false);
+      showEdge("right", false);
+    }
   }
 
   const stageBind = () => {
@@ -248,7 +295,6 @@ function prevCard(source = "button") {
         sx = e.touches[0].clientX;
         sy = e.touches[0].clientY;
 
-        // subtle press feedback
         cardImage.classList.add("kfx-tap");
       },
       { passive: true }
@@ -261,18 +307,14 @@ function prevCard(source = "button") {
         const t = e.touches && e.touches[0];
         if (!t) return;
 
-        const dx = t.clientX - sx;
+        lastDx = t.clientX - sx;
 
-        // show faint edge hint while dragging
-        if (dx < -30) {
-          showEdge("right", true);
-          showEdge("left", false);
-        } else if (dx > 30) {
-          showEdge("left", true);
-          showEdge("right", false);
-        } else {
-          showEdge("left", false);
-          showEdge("right", false);
+        if (!rafPending) {
+          rafPending = true;
+          requestAnimationFrame(() => {
+            rafPending = false;
+            applyEdgeFromDx(lastDx);
+          });
         }
       },
       { passive: true }
@@ -297,13 +339,10 @@ function prevCard(source = "button") {
         // ignore mostly vertical gestures
         if (Math.abs(dy) > SWIPE_MAX_Y) return;
 
-        // swipe left => NEXT
         if (dx <= -SWIPE_MIN_X) {
           nextCard("swipe");
           return;
         }
-
-        // swipe right => PREV
         if (dx >= SWIPE_MIN_X) {
           prevCard("swipe");
           return;
@@ -334,7 +373,6 @@ function prevCard(source = "button") {
 // ===============================
 // BUTTON EVENTS
 // ===============================
-
 btnBack.addEventListener("click", openGrid);
 btnNext.addEventListener("click", () => nextCard("button"));
 btnPrev.addEventListener("click", () => prevCard("button"));
@@ -352,7 +390,6 @@ window.addEventListener("keydown", (e) => {
 // ===============================
 // INITIALIZATION
 // ===============================
-
 async function init() {
   try {
     const res = await fetch("data/meanings.json", { cache: "no-store" });
@@ -362,25 +399,40 @@ async function init() {
     return;
   }
 
-  // Build Grid Buttons (B1–B36)
+  // Basic safety checks
+  if (!config || !config.total || !config.cardsPath) {
+    console.error("meanings.json missing required fields:", config);
+    return;
+  }
+
+  // Card image load fallback (avoid blank state)
+  cardImage.addEventListener("error", () => {
+    console.error("Card image failed to load:", cardImage.src);
+    // small visual feedback if desired
+    try { if (navigator.vibrate) navigator.vibrate(20); } catch (_) {}
+  });
+
+  // Build Grid Buttons (1–total)
   for (let i = 1; i <= config.total; i++) {
     const button = document.createElement("button");
     button.className = "gridbtn";
     button.type = "button";
-    button.addEventListener("click", () => openCard(i));
+    button.addEventListener("click", () => openCard(i)); // no direction on direct open
 
     const img = document.createElement("img");
     img.className = "gridbtn__img";
-    img.alt = `Open meaning ${i}`;
+    img.alt = `OPEN MEANING ${i}`; // uppercase-friendly
+    img.decoding = "async";
+    img.loading = "eager";
     img.src = `${config.buttonsPath}/${config.buttonPrefix}${i}.${config.buttonExtension}`;
 
     button.appendChild(img);
     grid.appendChild(button);
   }
 
-  // Check if URL contains ?card=#
-  const url = new URL(window.location.href);
-  const cardParam = url.searchParams.get("card");
+  // If URL contains ?card=#
+  const loc = new URL(window.location.href);
+  const cardParam = loc.searchParams.get("card");
 
   if (cardParam) {
     const n = parseInt(cardParam, 10);
