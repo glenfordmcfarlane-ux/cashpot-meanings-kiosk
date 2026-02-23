@@ -1,1 +1,8 @@
-
+{
+  "total": 36,
+  "cardsPath": "assets/cards",
+  "cardExtension": "png",
+  "buttonsPath": "assets/ui/buttons",
+  "buttonPrefix": "B",
+  "buttonExtension": "png"
+}
