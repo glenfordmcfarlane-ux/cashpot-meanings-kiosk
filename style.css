@@ -1,1 +1,16 @@
+.gridbtn{
+  height: 150px;
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.08);
+  padding: 10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
+.gridbtn__img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
