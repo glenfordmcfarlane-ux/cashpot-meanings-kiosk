@@ -21,7 +21,12 @@ html, body{
   padding:0;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+  /* ✅ Force Trebuchet + ALL CAPS for the entire app */
+  font-family: "Trebuchet MS", Trebuchet, Verdana, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+
   overflow: hidden;
   touch-action: manipulation;
 }
@@ -32,6 +37,17 @@ html, body{
   height: 100vh;
   margin: 0;
   position: relative;
+
+  /* ✅ Ensure anything inside inherits Trebuchet + ALL CAPS */
+  font-family: "Trebuchet MS", Trebuchet, Verdana, sans-serif;
+  text-transform: uppercase;
+}
+
+/* Safety: ensure buttons don’t revert to system font */
+button, .navbtn, .title, .counter{
+  font-family: "Trebuchet MS", Trebuchet, Verdana, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .5px;
 }
 
 .view{ display:none; height:100%; }
@@ -73,7 +89,7 @@ html, body{
   background: rgba(255,255,255,.12);
   color: #fff;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 700; /* slightly bolder for Trebuchet */
   padding: 0 20px;
   backdrop-filter: blur(6px);
   transition: transform .12s ease, background .12s ease, border-color .12s ease;
@@ -95,7 +111,7 @@ html, body{
 
 .counter{
   font-size: 36px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* ✅ Grid: 4 columns, scroll inside only */
