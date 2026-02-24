@@ -12,10 +12,11 @@
   /* Push Prev/Next left (clear of kiosk +/- controls) */
   --nav-right-offset: 90px;
 
-  /* ✅ Tile controls */
-  --tile-gap: 16px;        /* prevents “merging” */
-  --tile-bezel: 6px;       /* slim consistent frame around images */
-  --tile-border: 2px;      /* frame thickness */
+  /* Tile look + spacing */
+  --tile-row-gap: 18px;     /* vertical spacing between rows */
+  --tile-col-gap: 16px;     /* horizontal spacing between columns */
+  --tile-bezel: 6px;        /* slim consistent frame around images */
+  --tile-border: 2px;       /* frame thickness */
 }
 
 *{ box-sizing: border-box; }
@@ -62,14 +63,15 @@ button, .navbtn, .title, .counter{
   justify-content:center;
   align-items:center;
 
-  /* ✅ apply safe-top ONLY to non-nav header */
+  /* safe-top applies to grid header */
   padding: var(--safe-top) var(--pad) 0 var(--pad);
 }
 
 /* =======================
    NAV TOP BAR (card view)
+   IMPORTANT: use more specific selector to override .topbar reliably
    ======================= */
-.topbar--nav{
+.topbar.topbar--nav{
   justify-content: space-between;
   gap: 12px;
 
@@ -81,11 +83,11 @@ button, .navbtn, .title, .counter{
   backdrop-filter: blur(4px);
   border-bottom: 1px solid rgba(255,255,255,.15);
 
-  /* ✅ override base padding completely */
-  padding: 0 var(--pad) 12px var(--pad);
+  /* override base padding COMPLETELY */
+  padding: 0 var(--pad) 10px var(--pad) !important;
 
-  /* ✅ push controls DOWN within the bar */
-  align-items: flex-end;
+  /* push controls DOWN within the bar */
+  align-items: flex-end !important;
 }
 
 /* Title (grid view only) */
@@ -136,27 +138,31 @@ button, .navbtn, .title, .counter{
   display:grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
 
-  /* ✅ HARD gaps (don’t rely on variables) */
-  column-gap: 16px;
-  row-gap: 18px;
+  /* prevent row stretching on some browsers */
+  grid-auto-rows: min-content;
 
-  /* ✅ This is the key: don’t stretch rows */
+  /* hard spacing (then FORCE with gap last) */
+  column-gap: var(--tile-col-gap);
+  row-gap: var(--tile-row-gap);
+
+  /* key: don’t stretch rows to fill container */
   align-content: start;
 
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+
+  /* ✅ final authoritative spacing */
+  gap: var(--tile-row-gap) var(--tile-col-gap);
 }
 
-/* ✅ Tile container: slightly larger than image (bezel) */
+/* Tile container: slightly larger than image (bezel) */
 .gridbtn{
   width: 100%;
+  aspect-ratio: 11 / 9;             /* exact match to 550x450 */
 
-  /* ✅ slightly shorter than 11/9 so rows don’t touch */
-  aspect-ratio: 11 / 8.6;
-
-  padding: 6px;
+  padding: var(--tile-bezel);       /* bezel around image */
   border-radius: 16px;
-  border: 2px solid rgba(255,255,255,.20);
+  border: var(--tile-border) solid rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
 
   display:flex;
@@ -165,6 +171,9 @@ button, .navbtn, .title, .counter{
 
   overflow:hidden;
   line-height: 0;
+
+  /* ✅ “seatbelt” to prevent touching even if kiosk browser glitches */
+  margin: 0 0 6px 0;
 }
 
 /* keep this (nice press feedback) */
@@ -176,7 +185,7 @@ button, .navbtn, .title, .counter{
   display:block;
   object-fit: contain;
 
-  /* ✅ keep these (can help sharpness on some kiosk panels) */
+  /* keep these (can help sharpness on some kiosk panels) */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
@@ -194,22 +203,25 @@ button, .navbtn, .title, .counter{
   display:flex;
   justify-content:center;
 
-  /* ✅ push card DOWN to reduce “bottom gap feeling” */
+  /* keep card at bottom so any spare space becomes TOP space */
   align-items: flex-end;
 
-  /* ✅ remove extra bottom padding that creates a visible gap */
+  /* no extra bottom padding (prevents bottom “gap”) */
   padding: 0 6px 0;
 }
 
-/* ✅ Fill screen more WITHOUT distorting aspect ratio */
+/* Fill screen more WITHOUT distortion */
 .cardImage{
+  /* width-first scaling (safe), anchored bottom by cardStage */
   width: 100%;
   height: auto;
+
   max-width: 1080px;
   max-height: 100%;
+
   object-fit: contain;
   border-radius: 18px;
 
-  /* ✅ tiny nudge down (optional but helps visually) */
-  transform: translateY(10px);
+  /* IMPORTANT: no translateY here (can create visual spacing issues) */
+  transform: none;
 }
