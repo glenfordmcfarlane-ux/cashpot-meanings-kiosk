@@ -130,30 +130,36 @@ button, .navbtn, .title, .counter{
 }
 
 /* ✅ Tile container matches your PNG ratio (550x450) */
+/* =========================
+   GRID TILE (FINAL VERSION)
+   ========================= */
+
 .gridbtn{
   width: 100%;
-  aspect-ratio: 550 / 450;      /* ✅ fixes tall container */
-  border-radius: 16px;
-  border: 2px solid rgba(255,255,255,.20);
-  background: rgba(255,255,255,.06);
+  aspect-ratio: 550 / 450;      /* exact image ratio */
 
-  padding: 4px;                 /* keep the nice inner frame */
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.05);
+
+  /* Slim, consistent bezel */
+  padding: 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   overflow: hidden;
   line-height: 0;
 }
-.gridbtn:active{ transform: scale(0.98); }
 
 .gridbtn__img{
   width: 100%;
   height: 100%;
-  object-fit: contain;          /* ✅ no stretching */
+  object-fit: contain;   /* NEVER stretch */
   display: block;
 
-  /* ✅ keep for kiosk sharpness */
+  /* Optional sharpness for kiosk panels */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
