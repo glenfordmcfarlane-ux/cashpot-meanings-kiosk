@@ -1,17 +1,22 @@
 :root{
   --screen-w: 1080px;
   --screen-h: 1920px;
+
   --pad: 24px;
-  --topbar-h: 120px;
+
+  /* ✅ Nav was sitting too high—reduce these */
+  --safe-top: 6px;     /* was 20px */
+  --topbar-h: 100px;   /* was 120px */
+
   --bg: #111;
   --text: #fff;
 
-  /* ✅ If kiosk-menu masks are disabled for meanings page,
-     this should be small (just a safety buffer) */
-  --safe-top: 20px;
-
   /* ✅ Push Prev/Next left (clear of kiosk +/- controls) */
   --nav-right-offset: 90px;
+
+  /* ✅ Grid tile sizing controls (prevents overly tall tiles) */
+  --tile-gap: 14px;
+  --tile-max-h: 230px; /* cap height so containers aren’t tall */
 }
 
 *{ box-sizing: border-box; }
@@ -22,7 +27,7 @@ html, body{
   background: var(--bg);
   color: var(--text);
 
-  /* ✅ Force Trebuchet + ALL CAPS for the entire app */
+  /* ✅ Force Trebuchet + ALL CAPS */
   font-family: "Trebuchet MS", Trebuchet, Verdana, sans-serif;
   text-transform: uppercase;
   letter-spacing: .4px;
@@ -37,13 +42,8 @@ html, body{
   height: 100vh;
   margin: 0;
   position: relative;
-
-  /* ✅ Ensure anything inside inherits Trebuchet + ALL CAPS */
-  font-family: "Trebuchet MS", Trebuchet, Verdana, sans-serif;
-  text-transform: uppercase;
 }
 
-/* Safety: ensure buttons don’t revert to system font */
 button, .navbtn, .title, .counter{
   font-family: "Trebuchet MS", Trebuchet, Verdana, sans-serif;
   text-transform: uppercase;
@@ -56,7 +56,8 @@ button, .navbtn, .title, .counter{
 /* Top bar */
 .topbar{
   height: var(--topbar-h);
-  padding: var(--safe-top) var(--pad) 0 var(--pad);
+  padding: 0 var(--pad);          /* 🔥 remove top padding here */
+  padding-top: var(--safe-top);   /* ✅ controlled top offset */
   display:flex;
   align-items:center;
   justify-content:center;
@@ -66,31 +67,36 @@ button, .navbtn, .title, .counter{
 .topbar--nav{
   justify-content: space-between;
   gap: 12px;
+
   position: sticky;
   top: 0;
   z-index: 100;
+
   background: rgba(17,17,17,.95);
   backdrop-filter: blur(4px);
-  padding: 4px 0; /* 🔥 reduce from 10px */
+
+  /* 🔥 keep tight */
+  padding: 2px 0;
   border-bottom: 1px solid rgba(255,255,255,.15);
 }
 
+/* ✅ Title: clamp so it never breaks layout */
 .title{
-  font-size: 72px;   /* was 38px */
-  letter-spacing: 1px;  /* optional, makes it cleaner */
+  font-size: clamp(44px, 4vw, 72px);
+  letter-spacing: 1px;
   margin:0;
 }
 
 /* ✅ Polished button styling */
 .navbtn{
-  height: 80px;
+  height: 78px;
   min-width: 140px;
   border-radius: 16px;
   border: 2px solid rgba(255,255,255,.22);
   background: rgba(255,255,255,.12);
   color: #fff;
   font-size: 26px;
-  font-weight: 700; /* slightly bolder for Trebuchet */
+  font-weight: 700;
   padding: 0 20px;
   backdrop-filter: blur(6px);
   transition: transform .12s ease, background .12s ease, border-color .12s ease;
@@ -105,9 +111,7 @@ button, .navbtn, .title, .counter{
 .navbtn-group{
   display:flex;
   gap: 12px;
-
-  /* ✅ This is what moves Prev/Next left */
-  margin-right: var(--nav-right-offset);
+  margin-right: var(--nav-right-offset); /* moves Prev/Next left */
 }
 
 .counter{
@@ -119,23 +123,29 @@ button, .navbtn, .title, .counter{
 .grid{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
   padding: 12px 28px 18px;
+
   display:grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  justify-items: center;
-  overflow-y: auto;
+  gap: var(--tile-gap);
 
+  justify-items: stretch;
+  align-content: start;
+
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Square buttons that scale naturally */
+/* ✅ Tiles: keep your 550x450 ratio but prevent tall containers */
 .gridbtn{
   width: 100%;
-  aspect-ratio: 11 / 9; /* matches 550x450 */
+  aspect-ratio: 11 / 9;           /* matches 550x450 */
+  max-height: var(--tile-max-h);  /* 🔥 prevents tall “container” look */
+
   border-radius: 16px;
   border: 2px solid rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
   padding: 4px;
+
   display:flex;
   align-items:center;
   justify-content:center;
@@ -148,9 +158,9 @@ button, .navbtn, .title, .counter{
   height: 100%;
   object-fit: contain;
 
-  /* 🔥 improves sharpness on some panels */
+  /* 🔥 sharper in Chromium-based kiosks */
+  image-rendering: auto;
   image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
 }
 
 /* Visible scrollbar (Windows kiosks) */
@@ -158,21 +168,22 @@ button, .navbtn, .title, .counter{
 .grid::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.25); border-radius: 8px; }
 .grid::-webkit-scrollbar-track{ background: rgba(255,255,255,.08); }
 
-/* Card view */
+/* ✅ Card view: put card lower and remove bottom gap feel */
 .cardStage{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
   display:flex;
-  align-items: flex-start;   /* 🔥 was center */
+  align-items:flex-end;     /* 🔥 pushes card down */
   justify-content:center;
-  padding-top: 10px;         /* small controlled spacing */
+  padding: 0 8px 10px;      /* small bottom padding */
 }
 
-/* ✅ Scale by HEIGHT first (fills screen more), keep aspect ratio */
+/* ✅ Height-driven sizing (fills screen more), keep aspect ratio */
 .cardImage{
   height: 100%;
-  width: auto;          /* ✅ preserve aspect ratio */
+  width: auto;
   max-height: 100%;
   max-width: 100%;
+
   object-fit: contain;
   border-radius: 18px;
 }
