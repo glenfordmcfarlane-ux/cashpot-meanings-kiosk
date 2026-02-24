@@ -409,13 +409,13 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") openGrid();
 });
 // Side arrow controls (card view only)
-const arrowLeft = document.getElementById("arrowLeft");
-const arrowRight = document.getElementById("arrowRight");
+//const arrowLeft = document.getElementById("arrowLeft");
+//const arrowRight = document.getElementById("arrowRight");
 
-if (arrowLeft && arrowRight) {
-  arrowLeft.addEventListener("click", () => prevCard("button"));
-  arrowRight.addEventListener("click", () => nextCard("button"));
-}
+//if (arrowLeft && arrowRight) {
+ //arrowLeft.addEventListener("click", () => prevCard("button"));
+  //arrowRight.addEventListener("click", () => nextCard("button"));
+//}
 // ===============================
 // INITIALIZATION
 // ===============================
