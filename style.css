@@ -134,7 +134,7 @@ button, .navbtn, .title, .counter{
   border-radius: 16px;
   border: 2px solid rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
-  padding: 6px;
+  padding: 4px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -146,6 +146,10 @@ button, .navbtn, .title, .counter{
   width: 100%;
   height: 100%;
   object-fit: contain;
+
+  /* 🔥 improves sharpness on some panels */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Visible scrollbar (Windows kiosks) */
