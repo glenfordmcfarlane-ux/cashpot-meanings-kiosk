@@ -11,6 +11,11 @@
 
   /* Push Prev/Next left (clear of kiosk +/- controls) */
   --nav-right-offset: 90px;
+
+  /* ✅ Tile controls */
+  --tile-gap: 16px;        /* prevents “merging” */
+  --tile-bezel: 6px;       /* slim consistent frame around images */
+  --tile-border: 2px;      /* frame thickness */
 }
 
 *{ box-sizing: border-box; }
@@ -29,7 +34,6 @@ html, body{
   touch-action: manipulation;
 }
 
-/* Fullscreen kiosk layout */
 .app{
   width: 100vw;
   height: 100vh;
@@ -49,19 +53,23 @@ button, .navbtn, .title, .counter{
 .view{ display:none; height:100%; }
 .view--active{ display:block; }
 
-/* Top bar (grid page) */
+/* =======================
+   TOP BAR (base)
+   ======================= */
 .topbar{
   height: var(--topbar-h);
-  padding: var(--safe-top) var(--pad) 0 var(--pad);
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
+
+  /* ✅ apply safe-top ONLY to non-nav header */
+  padding: var(--safe-top) var(--pad) 0 var(--pad);
 }
 
-/* ✅ Card page nav bar (BACK / COUNTER / PREV / NEXT)
-   Key: keep it sticky, but override padding so controls sit LOWER */
-.topbar.topbar--nav{
-  height: var(--topbar-h);                /* keep height consistent */
+/* =======================
+   NAV TOP BAR (card view)
+   ======================= */
+.topbar--nav{
   justify-content: space-between;
   gap: 12px;
 
@@ -73,15 +81,18 @@ button, .navbtn, .title, .counter{
   backdrop-filter: blur(4px);
   border-bottom: 1px solid rgba(255,255,255,.15);
 
-  /* ✅ This is what actually lowers the buttons/counter */
-  padding: 0 var(--pad) 14px var(--pad);
+  /* ✅ override base padding completely */
+  padding: 0 var(--pad) 12px var(--pad);
+
+  /* ✅ push controls DOWN within the bar */
   align-items: flex-end;
 }
 
+/* Title (grid view only) */
 .title{
   font-size: 72px;
   letter-spacing: 1px;
-  margin:0; /* ✅ keep */
+  margin:0;
 }
 
 /* Buttons */
@@ -115,51 +126,55 @@ button, .navbtn, .title, .counter{
   font-weight: 800;
 }
 
-/* ✅ GRID */
+/* =======================
+   GRID
+   ======================= */
 .grid{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
   padding: 12px 28px 18px;
+
   display:grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+
+  /* ✅ prevent tiles touching/merging */
+  column-gap: var(--tile-gap);
+  row-gap: var(--tile-gap);
+
   justify-items: center;
   align-content: start;
-  overflow-y: auto;
 
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* ✅ Tile container matches your PNG ratio (550x450) */
-/* =========================
-   GRID TILE (FINAL VERSION)
-   ========================= */
-
+/* ✅ Tile container: slightly larger than image (bezel) */
 .gridbtn{
   width: 100%;
-  aspect-ratio: 550 / 450;      /* exact image ratio */
+  aspect-ratio: 11 / 9;      /* matches 550x450 */
 
-  border-radius: 14px;
-  border: 2px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.05);
+  padding: var(--tile-bezel); /* ✅ slim bezel */
+  border-radius: 16px;
+  border: var(--tile-border) solid rgba(255,255,255,.20);
+  background: rgba(255,255,255,.06);
 
-  /* Slim, consistent bezel */
-  padding: 6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  overflow: hidden;
-  line-height: 0;
+  overflow:hidden;
+  line-height: 0;            /* avoid inline gaps */
 }
+
+/* keep this (nice press feedback) */
+.gridbtn:active{ transform: scale(0.98); }
 
 .gridbtn__img{
   width: 100%;
   height: 100%;
-  object-fit: contain;   /* NEVER stretch */
-  display: block;
+  display:block;
+  object-fit: contain;
 
-  /* Optional sharpness for kiosk panels */
+  /* ✅ keep these (can help sharpness on some kiosk panels) */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
@@ -169,24 +184,30 @@ button, .navbtn, .title, .counter{
 .grid::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.25); border-radius: 8px; }
 .grid::-webkit-scrollbar-track{ background: rgba(255,255,255,.08); }
 
-/* ✅ CARD VIEW
-   Use ALL available height under nav bar and fill by HEIGHT first */
+/* =======================
+   CARD VIEW
+   ======================= */
 .cardStage{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
   display:flex;
-  align-items: flex-start;
   justify-content:center;
 
-  /* reduce “wasted” space and bottom gap */
-  padding: 4px 6px 6px;
+  /* ✅ push card DOWN to reduce “bottom gap feeling” */
+  align-items: flex-end;
+
+  /* ✅ remove extra bottom padding that creates a visible gap */
+  padding: 0 6px 0;
 }
 
-/* ✅ Fill by HEIGHT (no distortion), preserve 1080x1520 ratio */
+/* ✅ Fill screen more WITHOUT distorting aspect ratio */
 .cardImage{
-  height: calc(100vh - var(--safe-top) - var(--topbar-h) - 10px);
-  width: auto;
-  max-width: 100%;
+  width: 100%;
+  height: auto;
+  max-width: 1080px;
+  max-height: 100%;
   object-fit: contain;
   border-radius: 18px;
-  display:block;
+
+  /* ✅ tiny nudge down (optional but helps visually) */
+  transform: translateY(10px);
 }
