@@ -301,7 +301,9 @@ button, .navbtn, .title, .counter{
   justify-content: center;
 
   transition: background .2s ease, transform .15s ease;
-  z-index: 10;
+
+  z-index: 200;          /* 🔥 change from 10 → 200 */
+  pointer-events: auto;  /* 🔥 ADD THIS */
 }
 
 .cardArrow:hover{
