@@ -134,13 +134,13 @@ button, .navbtn, .title, .counter{
   padding: 12px 28px 18px;
 
   display:grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 
-  /* ✅ prevent tiles touching/merging */
-  column-gap: var(--tile-gap);
-  row-gap: var(--tile-gap);
+  /* ✅ HARD gaps (don’t rely on variables) */
+  column-gap: 16px;
+  row-gap: 18px;
 
-  justify-items: center;
+  /* ✅ This is the key: don’t stretch rows */
   align-content: start;
 
   overflow-y: auto;
@@ -150,11 +150,13 @@ button, .navbtn, .title, .counter{
 /* ✅ Tile container: slightly larger than image (bezel) */
 .gridbtn{
   width: 100%;
-  aspect-ratio: 11 / 9;      /* matches 550x450 */
 
-  padding: var(--tile-bezel); /* ✅ slim bezel */
+  /* ✅ slightly shorter than 11/9 so rows don’t touch */
+  aspect-ratio: 11 / 8.6;
+
+  padding: 6px;
   border-radius: 16px;
-  border: var(--tile-border) solid rgba(255,255,255,.20);
+  border: 2px solid rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
 
   display:flex;
@@ -162,7 +164,7 @@ button, .navbtn, .title, .counter{
   justify-content:center;
 
   overflow:hidden;
-  line-height: 0;            /* avoid inline gaps */
+  line-height: 0;
 }
 
 /* keep this (nice press feedback) */
