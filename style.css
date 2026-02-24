@@ -221,32 +221,41 @@ button, .navbtn, .title, .counter{
   border-radius: 18px;
 }
 /* =========================
-   FORCE OVERRIDES (CARD VIEW)
+   HARD FIX: CARD VIEW LAYOUT
    Put this at the VERY END of style.css
    ========================= */
 
-/* 1) NAV BAR: force shorter height + remove safe-top padding influence */
+/* Make card view a vertical layout: nav on top, stage fills rest */
+#cardView{
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+}
+
+/* Nav bar: fixed height, controls sit lower inside bar */
 #cardView .topbar.topbar--nav{
-  height: 88px !important;
-  padding: 0 var(--pad) 6px var(--pad) !important;
+  flex: 0 0 auto !important;
+  height: 90px !important;
+  padding: 0 var(--pad) 8px var(--pad) !important;
   align-items: flex-end !important;
 }
 
-/* 2) CARD STAGE: force bottom anchoring (removes “bottom gap feeling”) */
+/* Stage: fills remaining space and anchors image to bottom */
 #cardView .cardStage{
-  height: calc(100vh - 88px) !important;  /* match nav height above */
-  align-items: flex-end !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
   justify-content: center !important;
-  padding: 0 6px 0 !important;
+  align-items: flex-end !important;
+  padding: 0 6px 0 !important;   /* no bottom padding */
 }
 
-/* 3) CARD IMAGE: keep aspect ratio, but ensure it can grow to full height */
+/* Image: grow as large as possible WITHOUT distortion */
 #cardView .cardImage{
+  height: 100% !important;       /* fill stage height */
+  width: auto !important;        /* preserve aspect ratio */
+  max-width: 100% !important;
   max-height: 100% !important;
-  max-width: 1080px !important;
-  width: 100% !important;
-  height: auto !important;
   object-fit: contain !important;
   margin: 0 !important;
-  transform: translateY(6px) !important;  /* small push down */
 }
