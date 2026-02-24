@@ -132,14 +132,19 @@ button, .navbtn, .title, .counter{
 /* ✅ Keep tiles SQUARE to prevent tall containers */
 .gridbtn{
   width: 100%;
-  aspect-ratio: 1 / 1; /* ← restores earlier container sizing */
+  aspect-ratio: 11 / 9;   /* exact match to 550x450 */
+  padding: 0;             /* remove extra inner space */
+  margin: 0;
   border-radius: 16px;
   border: 2px solid rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
-  padding: 4px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;       /* hides any extra */
+  line-height: 0;         /* prevents inline gap */
 }
 .gridbtn:active{ transform: scale(0.98); }
 
@@ -147,9 +152,7 @@ button, .navbtn, .title, .counter{
   width: 100%;
   height: 100%;
   object-fit: contain;
-
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  display: block;   /* important */
 }
 
 /* Scrollbar */
