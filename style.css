@@ -220,3 +220,33 @@ button, .navbtn, .title, .counter{
   object-fit: contain;
   border-radius: 18px;
 }
+/* =========================
+   FORCE OVERRIDES (CARD VIEW)
+   Put this at the VERY END of style.css
+   ========================= */
+
+/* 1) NAV BAR: force shorter height + remove safe-top padding influence */
+#cardView .topbar.topbar--nav{
+  height: 88px !important;
+  padding: 0 var(--pad) 6px var(--pad) !important;
+  align-items: flex-end !important;
+}
+
+/* 2) CARD STAGE: force bottom anchoring (removes “bottom gap feeling”) */
+#cardView .cardStage{
+  height: calc(100vh - 88px) !important;  /* match nav height above */
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: 0 6px 0 !important;
+}
+
+/* 3) CARD IMAGE: keep aspect ratio, but ensure it can grow to full height */
+#cardView .cardImage{
+  max-height: 100% !important;
+  max-width: 1080px !important;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+  margin: 0 !important;
+  transform: translateY(6px) !important;  /* small push down */
+}
