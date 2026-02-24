@@ -192,7 +192,38 @@ function preloadNeighbors() {
 
   trimPreloadCache(10);
 }
+function bindSideArrows() {
+  const arrowLeft = document.getElementById("arrowLeft");
+  const arrowRight = document.getElementById("arrowRight");
 
+  if (!arrowLeft || !arrowRight) {
+    console.warn("Side arrows not found. Check IDs: arrowLeft / arrowRight");
+    return;
+  }
+
+  // Click support
+  arrowLeft.addEventListener("click", () => prevCard("button"));
+  arrowRight.addEventListener("click", () => nextCard("button"));
+
+  // Touch support (kiosk screens)
+  arrowLeft.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      prevCard("swipe");
+    },
+    { passive: false }
+  );
+
+  arrowRight.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      nextCard("swipe");
+    },
+    { passive: false }
+  );
+}
 // -------------------------------
 // Card / Grid actions
 // -------------------------------
@@ -447,7 +478,7 @@ async function init() {
       return;
     }
   }
-
+bindSideArrows();
   openGrid();
 }
 
