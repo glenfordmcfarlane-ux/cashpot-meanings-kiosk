@@ -130,7 +130,7 @@ button, .navbtn, .title, .counter{
 /* Square buttons that scale naturally */
 .gridbtn{
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 11 / 9; /* matches 550x450 */
   border-radius: 16px;
   border: 2px solid rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
