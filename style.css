@@ -29,6 +29,7 @@ html, body{
   touch-action: manipulation;
 }
 
+/* Fullscreen kiosk layout */
 .app{
   width: 100vw;
   height: 100vh;
@@ -48,7 +49,7 @@ button, .navbtn, .title, .counter{
 .view{ display:none; height:100%; }
 .view--active{ display:block; }
 
-/* Top bar */
+/* Top bar (grid page) */
 .topbar{
   height: var(--topbar-h);
   padding: var(--safe-top) var(--pad) 0 var(--pad);
@@ -57,12 +58,13 @@ button, .navbtn, .title, .counter{
   justify-content:center;
 }
 
-/* ✅ NAV BAR: lower the BACK/COUNTER/PREV/NEXT closer to card */
+/* ✅ Card page nav bar (BACK / COUNTER / PREV / NEXT)
+   Key: keep it sticky, but override padding so controls sit LOWER */
 .topbar.topbar--nav{
+  height: var(--topbar-h);                /* keep height consistent */
   justify-content: space-between;
   gap: 12px;
 
-  /* keep it stable */
   position: sticky;
   top: 0;
   z-index: 100;
@@ -71,17 +73,15 @@ button, .navbtn, .title, .counter{
   backdrop-filter: blur(4px);
   border-bottom: 1px solid rgba(255,255,255,.15);
 
-  /* IMPORTANT: override the base .topbar padding */
-  padding: 0 var(--pad) 10px var(--pad);
-
-  /* move the controls DOWN inside the bar */
+  /* ✅ This is what actually lowers the buttons/counter */
+  padding: 0 var(--pad) 14px var(--pad);
   align-items: flex-end;
 }
 
 .title{
   font-size: 72px;
   letter-spacing: 1px;
-  margin:0; /* ✅ keep this */
+  margin:0; /* ✅ keep */
 }
 
 /* Buttons */
@@ -115,7 +115,7 @@ button, .navbtn, .title, .counter{
   font-weight: 800;
 }
 
-/* ✅ GRID: restore the tighter tile height you had before */
+/* ✅ GRID */
 .grid{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
   padding: 12px 28px 18px;
@@ -129,57 +129,58 @@ button, .navbtn, .title, .counter{
   -webkit-overflow-scrolling: touch;
 }
 
-/* ✅ Keep tiles SQUARE to prevent tall containers */
+/* ✅ Tile container matches your PNG ratio (550x450) */
 .gridbtn{
   width: 100%;
-  aspect-ratio: 11 / 9;   /* exact match to 550x450 */
-  padding: 0;             /* remove extra inner space */
-  margin: 0;
+  aspect-ratio: 550 / 450;      /* ✅ fixes tall container */
   border-radius: 16px;
   border: 2px solid rgba(255,255,255,.20);
   background: rgba(255,255,255,.06);
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 4px;                 /* keep the nice inner frame */
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-  overflow: hidden;       /* hides any extra */
-  line-height: 0;         /* prevents inline gap */
+  overflow: hidden;
+  line-height: 0;
 }
 .gridbtn:active{ transform: scale(0.98); }
 
 .gridbtn__img{
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  display: block;   /* important */
+  object-fit: contain;          /* ✅ no stretching */
+  display: block;
+
+  /* ✅ keep for kiosk sharpness */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
-/* Scrollbar */
+/* Visible scrollbar (Windows kiosks) */
 .grid::-webkit-scrollbar{ width: 10px; }
 .grid::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.25); border-radius: 8px; }
 .grid::-webkit-scrollbar-track{ background: rgba(255,255,255,.08); }
 
-/* ✅ CARD VIEW: anchor the card LOWER so you don’t “feel” a bottom gap */
+/* ✅ CARD VIEW
+   Use ALL available height under nav bar and fill by HEIGHT first */
 .cardStage{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
   display:flex;
+  align-items: flex-start;
   justify-content:center;
 
-  /* put the card toward the bottom */
-  align-items: flex-end;
-
-  /* tiny bottom pad so it doesn’t kiss the edge */
-  padding: 0 6px 10px;
+  /* reduce “wasted” space and bottom gap */
+  padding: 4px 6px 6px;
 }
 
-/* ✅ Card is already max width (1080), so you can’t make it taller without cropping.
-   Best approach is: full width, keep aspect ratio. */
+/* ✅ Fill by HEIGHT (no distortion), preserve 1080x1520 ratio */
 .cardImage{
-  width: 100%;
-  height: auto;
-  max-width: 1080px;
-  max-height: 100%;
+  height: calc(100vh - var(--safe-top) - var(--topbar-h) - 10px);
+  width: auto;
+  max-width: 100%;
   object-fit: contain;
   border-radius: 18px;
+  display:block;
 }
