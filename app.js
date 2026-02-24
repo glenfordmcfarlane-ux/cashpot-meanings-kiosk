@@ -195,34 +195,28 @@ function preloadNeighbors() {
 function bindSideArrows() {
   const arrowLeft = document.getElementById("arrowLeft");
   const arrowRight = document.getElementById("arrowRight");
+  if (!arrowLeft || !arrowRight) return;
 
-  if (!arrowLeft || !arrowRight) {
-    console.warn("Side arrows not found. Check IDs: arrowLeft / arrowRight");
-    return;
-  }
+  // ✅ prevent double-binding (which causes +2 jumps)
+  if (arrowLeft.dataset.bound === "1") return;
+  arrowLeft.dataset.bound = "1";
+  arrowRight.dataset.bound = "1";
 
-  // Click support
-  arrowLeft.addEventListener("click", () => prevCard("button"));
-  arrowRight.addEventListener("click", () => nextCard("button"));
+  const goPrev = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    prevCard("button");
+  };
 
-  // Touch support (kiosk screens)
-  arrowLeft.addEventListener(
-    "touchend",
-    (e) => {
-      e.preventDefault();
-      prevCard("swipe");
-    },
-    { passive: false }
-  );
+  const goNext = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    nextCard("button");
+  };
 
-  arrowRight.addEventListener(
-    "touchend",
-    (e) => {
-      e.preventDefault();
-      nextCard("swipe");
-    },
-    { passive: false }
-  );
+  // ✅ use pointerup to avoid click+touch double-fire on kiosks
+  arrowLeft.addEventListener("pointerup", goPrev);
+  arrowRight.addEventListener("pointerup", goNext);
 }
 // -------------------------------
 // Card / Grid actions
