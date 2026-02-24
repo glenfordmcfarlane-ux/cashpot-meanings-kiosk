@@ -196,32 +196,24 @@ button, .navbtn, .title, .counter{
 .grid::-webkit-scrollbar-track{ background: rgba(255,255,255,.08); }
 
 /* =======================
-   CARD VIEW
+   CARD VIEW (MAX SIZE)
    ======================= */
+
 .cardStage{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
   display:flex;
   justify-content:center;
-
-  /* keep card at bottom so any spare space becomes TOP space */
-  align-items: flex-end;
-
-  /* no extra bottom padding (prevents bottom “gap”) */
-  padding: 0 6px 0;
+  align-items: center;
+  padding: 0 6px;
 }
 
-/* Fill screen more WITHOUT distortion */
 .cardImage{
-  /* width-first scaling (safe), anchored bottom by cardStage */
-  width: 100%;
-  height: auto;
+  height: 100%;
+  width: auto;
 
-  max-width: 1080px;
   max-height: 100%;
+  max-width: 100%;
 
   object-fit: contain;
   border-radius: 18px;
-
-  /* IMPORTANT: no translateY here (can create visual spacing issues) */
-  transform: none;
 }
