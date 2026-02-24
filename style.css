@@ -76,7 +76,7 @@ button, .navbtn, .title, .counter{
 }
 
 .title{
-  font-size: 52px;   /* was 38px */
+  font-size: 72px;   /* was 38px */
   letter-spacing: 1px;  /* optional, makes it cleaner */
   margin:0;
 }
