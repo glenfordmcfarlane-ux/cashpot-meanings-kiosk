@@ -448,7 +448,7 @@ async function init() {
     img.alt = `OPEN MEANING ${i}`;
     img.decoding = "async";
     img.loading = "eager";
-    img.src = `${config.buttonsPath}/${config.buttonPrefix}${i}.${config.buttonExtension}`;
+    img.src = `${config.buttonsPath}/${config.buttonPrefix}${i}.${config.buttonExtension}?v=2`;
 
     button.appendChild(img);
     grid.appendChild(button);
