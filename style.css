@@ -71,7 +71,7 @@ button, .navbtn, .title, .counter{
   z-index: 100;
   background: rgba(17,17,17,.95);
   backdrop-filter: blur(4px);
-  padding: 10px 0;
+  padding: 4px 0; /* 🔥 reduce from 10px */
   border-bottom: 1px solid rgba(255,255,255,.15);
 }
 
@@ -162,9 +162,9 @@ button, .navbtn, .title, .counter{
 .cardStage{
   height: calc(100vh - var(--safe-top) - var(--topbar-h));
   display:flex;
-  align-items:center;
+  align-items: flex-start;   /* 🔥 was center */
   justify-content:center;
-  padding: 0;           /* ✅ remove extra padding */
+  padding-top: 10px;         /* small controlled spacing */
 }
 
 /* ✅ Scale by HEIGHT first (fills screen more), keep aspect ratio */
