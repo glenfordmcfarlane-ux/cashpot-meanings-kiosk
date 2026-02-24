@@ -259,3 +259,14 @@ button, .navbtn, .title, .counter{
   object-fit: contain !important;
   margin: 0 !important;
 }
+/* ==========================
+   CARD BACKGROUND (NO CROP)
+   ========================== */
+#cardView .cardStage{
+  background: url("./assets/gold-bg.png") center / cover no-repeat;
+}
+
+/* Optional: make the card “float” a bit nicer on the gold */
+#cardView .cardImage{
+  box-shadow: 0 18px 50px rgba(0,0,0,.45);
+}
