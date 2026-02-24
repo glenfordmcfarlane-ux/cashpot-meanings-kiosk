@@ -67,11 +67,8 @@ button, .navbtn, .title, .counter{
   padding: var(--safe-top) var(--pad) 0 var(--pad);
 }
 
-/* =======================
-   NAV TOP BAR (card view)
-   IMPORTANT: use more specific selector to override .topbar reliably
-   ======================= */
-.topbar.topbar--nav{
+/* CARD VIEW NAV BAR (bring controls closer to card) */
+.topbar--nav{
   justify-content: space-between;
   gap: 12px;
 
@@ -83,11 +80,12 @@ button, .navbtn, .title, .counter{
   backdrop-filter: blur(4px);
   border-bottom: 1px solid rgba(255,255,255,.15);
 
-  /* override base padding COMPLETELY */
-  padding: 0 var(--pad) 10px var(--pad) !important;
+  /* ✅ make the nav bar shorter */
+  height: 88px;                 /* was using --topbar-h (120px) */
+  padding: 0 var(--pad) 6px;    /* small bottom pad */
 
-  /* push controls DOWN within the bar */
-  align-items: flex-end !important;
+  /* ✅ drop buttons lower inside the bar */
+  align-items: flex-end;
 }
 
 /* Title (grid view only) */
@@ -199,12 +197,17 @@ button, .navbtn, .title, .counter{
    CARD VIEW (MAX SIZE)
    ======================= */
 
+/* CARD VIEW STAGE (push card down; remove bottom gap) */
 .cardStage{
-  height: calc(100vh - var(--safe-top) - var(--topbar-h));
+  height: calc(100vh - var(--safe-top) - 88px); /* match nav height above */
   display:flex;
   justify-content:center;
-  align-items: center;
-  padding: 0 6px;
+
+  /* ✅ card sits low, so spare space becomes TOP space */
+  align-items: flex-end;
+
+  /* ✅ tiny bottom buffer so it doesn't kiss the edge */
+  padding: 0 6px 8px;
 }
 
 .cardImage{
